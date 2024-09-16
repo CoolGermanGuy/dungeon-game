@@ -61,7 +61,7 @@ impl Object {
             ObjectKind::Chest => false
         };
         let character = match kind {
-            ObjectKind::Path => String::from(" "),
+            ObjectKind::Path => String::from(" ◻ "),
             ObjectKind::Wall => String::from("◼"),
             ObjectKind::Chest => String::from("📦")
         };
@@ -106,13 +106,13 @@ impl Player {
             "W" | "w" | "up" => if self.position_y > 0 && map.fields[self.position_y - 1][self.position_x].kind == ObjectKind::Path {
                 self.position_y -= 1
             },
-            "A" | "a" | "right" => if self.position_y > 0 && map.fields[self.position_y][self.position_x - 1].kind == ObjectKind::Path {
+            "A" | "a" | "left" => if self.position_y > 0 && map.fields[self.position_y][self.position_x - 1].kind == ObjectKind::Path {
                 self.position_x -= 1
             }
             "S" | "s" | "down" => if self.position_y < (map.y - 1) && map.fields[self.position_y + 1][self.position_x].kind == ObjectKind::Path {
                 self.position_y += 1
             },
-            "D" | "d" | "left" => if self.position_x < (map.x - 1) && map.fields[self.position_y][self.position_x + 1].kind == ObjectKind::Path {
+            "D" | "d" | "right" => if self.position_x < (map.x - 1) && map.fields[self.position_y][self.position_x + 1].kind == ObjectKind::Path {
                 self.position_x += 1
             }
             _ => return
@@ -137,7 +137,7 @@ fn get_input(map: &Map) -> String {
 fn main() {
     clear_terminal();
     let map = Map::new(9,9); // initialize the map
-    let mut player = Player::new(10, String::from("P"));
+    let mut player = Player::new(10, String::from(" P "));
     map.draw(&player);
     loop {
         player.movement(&map, get_input(&map));
