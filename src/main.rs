@@ -1,4 +1,4 @@
-use std::{io::{self, Read}, path::{Path, StripPrefixError}};
+use std::io;
 // STRUCTS
 struct Display { // EVERYTHING | the entire display with all sub-menus
 
@@ -29,6 +29,7 @@ impl Map { // functionality for the map
         }
     }
     fn draw(&self, player: &Player) {
+        clear_terminal();
         for y in 0..self.y {
             for x in 0..self.x {
                 if y == player.position_y && x == player.position_x {
@@ -40,6 +41,20 @@ impl Map { // functionality for the map
             println!();
         }
     }
+    fn build(&mut self) {
+        for y in 0..self.y {
+            for x in 0..self.x {
+                if y == 0 || y == self.y - 1{
+                    self.fields[y][x] = Object::new(ObjectKind::Wall);
+                }
+                if x == 0 || x == self.x - 1 {
+                    self.fields[y][x] = Object::new(ObjectKind::Wall);
+                }
+            }
+        }
+        
+    }
+
 }
 
 struct Object { // Objects (1x1 on the map) like Path, Wall and Chest
@@ -50,6 +65,7 @@ struct Object { // Objects (1x1 on the map) like Path, Wall and Chest
 #[derive(PartialEq)]
 enum ObjectKind { // Objects on the Map
     Wall,
+    Rock,
     Path,
     Chest
 }
@@ -58,12 +74,14 @@ impl Object {
         let walkable = match kind {
             ObjectKind::Path => true,
             ObjectKind::Wall => false,
-            ObjectKind::Chest => false
+            ObjectKind::Rock => false,
+            ObjectKind::Chest => false,
         };
         let character = match kind {
-            ObjectKind::Path => String::from(" ◻ "),
-            ObjectKind::Wall => String::from("◼"),
-            ObjectKind::Chest => String::from("📦")
+            ObjectKind::Path => String::from("  "), //◻
+            ObjectKind::Wall => String::from("🧱"),
+            ObjectKind::Rock => String::from("🪨"),
+            ObjectKind::Chest => String::from("📦"),
         };
         Object {
             kind,
@@ -106,7 +124,7 @@ impl Player {
             "W" | "w" | "up" => if self.position_y > 0 && map.fields[self.position_y - 1][self.position_x].kind == ObjectKind::Path {
                 self.position_y -= 1
             },
-            "A" | "a" | "left" => if self.position_y > 0 && map.fields[self.position_y][self.position_x - 1].kind == ObjectKind::Path {
+            "A" | "a" | "left" => if self.position_x > 0 && map.fields[self.position_y][self.position_x - 1].kind == ObjectKind::Path {
                 self.position_x -= 1
             }
             "S" | "s" | "down" => if self.position_y < (map.y - 1) && map.fields[self.position_y + 1][self.position_x].kind == ObjectKind::Path {
@@ -127,17 +145,19 @@ fn clear_terminal() {
 fn get_input(map: &Map) -> String {
     //let mut input = &mut String::new();
     //io::stdin().read_line(&mut input).expect("Too long.");
-    print!("\x1B[{};0H", map.y + 1);
+    //print!("\x1B[{};0H", map.y + 1);
     let mut input = String::new();
     io::stdin().read_line(&mut input).expect("Failed to read line");
     let input = input.trim();
     String::from(input) // return input
 }
 
+
 fn main() {
     clear_terminal();
-    let map = Map::new(9,9); // initialize the map
-    let mut player = Player::new(10, String::from(" P "));
+    let mut map = Map::new(10,10); // initialize the map
+    let mut player = Player::new(10, String::from("🤴"));
+    map.build();
     map.draw(&player);
     loop {
         player.movement(&map, get_input(&map));
